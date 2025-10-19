@@ -1,0 +1,15 @@
+{
+  "name": "keystackapp/keystack-php-auth",
+  "description": "KeyStack PHP library for data encryption and decryption, and login handling.",
+  "license": "MIT",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "KeyStackApp\\": "src/"
+    }
+  },
+  "require": {
+    "phpseclib/phpseclib": "~3.0"
+  },
+  "minimum-stability": "stable"
+}
