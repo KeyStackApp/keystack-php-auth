@@ -16,7 +16,7 @@ class ApiKeyExtractor
     {
         $payload = json_decode(base64_decode(str_replace('apiKey_', '', $apiKey)), true);
         if (!isset($payload['apiKey']) || !isset($payload['pk_secret'])) {
-            throw new \LogicException('Invalid fireboost api key!');
+            throw new \LogicException('Invalid keystack api key!');
         }
 
         return $payload;
