@@ -14,16 +14,20 @@ namespace KeyStackApp;
 use KeyStackApp\Adapter\TokenStorageAdapterInterface;;
 use KeyStackApp\Authentication\Api\AuthenticationApi;
 use KeyStackApp\Authentication\Model\LoginInput;
+use KeyStackApp\Encryptor\ApiKeyExtractor;
 use KeyStackApp\Encryptor\CredentialExtractor;
 
 class LoginManager
 {
+    private const DEFAULT_API_URL_TEMPLATE = 'https://{project}.api.keystack.app';
     private CredentialExtractor $credentialExtractor;
     private AuthenticationApi $clientApi;
+    private ApiKeyExtractor $apiKeyExtractor;
 
     public function __construct() {
         $this->credentialExtractor = new CredentialExtractor();
         $this->clientApi = new AuthenticationApi();
+        $this->apiKeyExtractor = new ApiKeyExtractor();
     }
 
     public function login(TokenStorageAdapterInterface $adapter, string $apiKey): void
@@ -45,5 +49,24 @@ class LoginManager
         $adapter->storeToken($loginOutput->getJwtToken());
 
         $adapter->resetLoginAttemptCount();
+    }
+
+    public function getApiUrl(string $apiKey, string $apiUrlTemplate = null): string
+    {
+        if (empty($this->apiKey)) {
+            throw new \InvalidArgumentException('API key is required to determine API URL');
+        }
+
+        $payload = $this->apiKeyExtractor->getApiKeyPayload($this->apiKey);
+
+        if (!isset($payload['project'])) {
+            throw new \InvalidArgumentException('Invalid API key: missing project information');
+        }
+        $urlTemplate = defined('FIREBOOST_API_URL')
+            ? constant('FIREBOOST_API_URL')
+            : (getenv('FIREBOOST_API_URL') ?? $apiUrlTemplate ?? self::DEFAULT_API_URL_TEMPLATE)
+        ;
+
+        return str_replace('{project}', $payload['project'], $urlTemplate);
     }
 }
